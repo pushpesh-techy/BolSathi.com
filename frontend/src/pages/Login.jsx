@@ -80,13 +80,14 @@ const Login = () => {
     <div
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        background: "linear-gradient(135deg, #D6F4ED 0%, #87BAC3 100%)",
+        background:
+          "linear-gradient(135deg, var(--light) 0%, var(--accent) 100%)",
       }}
     >
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <h2
           className="text-3xl font-bold mb-6 text-center"
-          style={{ color: "#473472" }}
+          style={{ color: "var(--primary)" }}
         >
           Login
         </h2>
@@ -95,9 +96,9 @@ const Login = () => {
           <div
             className="border px-4 py-3 rounded-lg mb-4"
             style={{
-              backgroundColor: "#D6F4ED",
-              borderColor: "#87BAC3",
-              color: "#473472",
+              backgroundColor: "var(--light)",
+              borderColor: "var(--accent)",
+              color: "var(--primary)",
             }}
           >
             {successMessage}
@@ -114,7 +115,7 @@ const Login = () => {
           <div>
             <label
               className="block font-semibold mb-2"
-              style={{ color: "#473472" }}
+              style={{ color: "var(--primary)" }}
             >
               Email
             </label>
@@ -125,16 +126,16 @@ const Login = () => {
               onChange={handleChange}
               placeholder="Enter your email"
               className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition"
-              style={{ borderColor: "#D6F4ED", color: "#473472" }}
-              onFocus={(e) => (e.target.style.borderColor = "#87BAC3")}
-              onBlur={(e) => (e.target.style.borderColor = "#D6F4ED")}
+              style={{ borderColor: "var(--light)", color: "var(--primary)" }}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--light)")}
             />
           </div>
 
           <div>
             <label
               className="block font-semibold mb-2"
-              style={{ color: "#473472" }}
+              style={{ color: "var(--primary)" }}
             >
               Password
             </label>
@@ -145,9 +146,9 @@ const Login = () => {
               onChange={handleChange}
               placeholder="Enter your password"
               className="w-full px-4 py-2 border-2 rounded-lg focus:outline-none transition"
-              style={{ borderColor: "#D6F4ED", color: "#473472" }}
-              onFocus={(e) => (e.target.style.borderColor = "#87BAC3")}
-              onBlur={(e) => (e.target.style.borderColor = "#D6F4ED")}
+              style={{ borderColor: "var(--light)", color: "var(--primary)" }}
+              onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--light)")}
             />
           </div>
 
@@ -155,20 +156,24 @@ const Login = () => {
             type="submit"
             disabled={loading}
             className="w-full text-white font-semibold py-2 rounded-lg transition duration-200"
-            style={{ backgroundColor: "#53629E" }}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#473472")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#53629E")}
+            style={{ backgroundColor: "var(--secondary)" }}
+            onMouseEnter={(e) =>
+              (e.target.style.backgroundColor = "var(--primary)")
+            }
+            onMouseLeave={(e) =>
+              (e.target.style.backgroundColor = "var(--secondary)")
+            }
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <p className="text-center mt-6" style={{ color: "#53629E" }}>
+        <p className="text-center mt-6" style={{ color: "var(--secondary)" }}>
           Don't have an account?{" "}
           <a
             href="/signup"
             className="font-semibold"
-            style={{ color: "#473472" }}
+            style={{ color: "var(--primary)" }}
           >
             Sign up here
           </a>
