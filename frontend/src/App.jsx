@@ -5,6 +5,7 @@ import RouteConfig from "./Routes/RouteConfig.jsx";
 function App() {
   return (
     <BrowserRouter>
+    {/* <RouteConfig /> */}
       <AuthProvider>
         <RouteConfig />
       </AuthProvider>

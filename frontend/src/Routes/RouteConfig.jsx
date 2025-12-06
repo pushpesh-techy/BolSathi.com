@@ -10,7 +10,7 @@ const RouteConfig = () => {
     <Routes>
       <Route
         path="/"
-        element={
+        element={  
           <ProtectedRoute>
             <Home />
           </ProtectedRoute>
