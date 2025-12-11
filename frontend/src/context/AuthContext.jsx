@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
 
 export const AuthContext = createContext();
 
@@ -21,140 +22,86 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (userData) => {
     try {
-      // Simulate API call - replace with actual API
-      const response = await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            success: true,
-            message: "OTP sent to your email",
-          });
-        }, 1000);
-      });
+      const response = await axios.post("http://localhost:5000/api/auth/signup", userData);
 
-      if (response.success) {
-        // Store signup data temporarily (not verified yet)
+      if (response.data.success) {
+        // Store signup data temporarily (not verified yet) for email re-use if needed
+        // backend doesn't return user data yet, just success msg
         localStorage.setItem("tempSignup", JSON.stringify(userData));
-        return { success: true, message: response.message };
+        return { success: true, message: response.data.message };
+      } else {
+          return { success: false, error: response.data.error || "Signup failed" };
       }
     } catch (error) {
-      return { success: false, error: error.message };
+       console.error("Signup error:", error);
+       return { success: false, error: error.response?.data?.error || error.message };
     }
   };
-
   const completeSignup = async (userData) => {
     try {
-      // After OTP verification, save the user data
-      const verifiedUser = {
-        id: Date.now(),
-        email: userData.email,
-        name: userData.name,
-        phone: userData.phone,
-        verifiedAt: new Date().toISOString(),
-      };
+       // userData coming from generic OTP component usually has { email, otp, ... }
+       // But Signup.jsx passes { ...formData, otp } usually.
+       // Let's ensure we extract email and otp.
+       const { email, otp } = userData;
 
-      // Store verified signup data with password
-      const registeredUser = {
-        ...verifiedUser,
-        password: userData.password,
-      };
+       const response = await axios.post("http://localhost:5000/api/auth/verify-signup", { email, otp });
 
-      localStorage.setItem("verifiedSignup", JSON.stringify(registeredUser));
-      localStorage.removeItem("tempSignup");
-
-      return { success: true, message: "Email verified successfully" };
+       if (response.data.success) {
+            localStorage.removeItem("tempSignup");
+            return { success: true, message: "Email verified successfully" };
+       } else {
+            return { success: false, error: response.data.error };
+       }
     } catch (error) {
-      return { success: false, error: error.message };
+       console.error("Verification error:", error);
+       return { success: false, error: error.response?.data?.error || error.message };
     }
   };
 
   const login = async (email, password) => {
     try {
-      // Simulate API call - verify credentials exist
-      const response = await new Promise((resolve) => {
-        setTimeout(() => {
-          const verifiedSignup = localStorage.getItem("verifiedSignup");
-          if (verifiedSignup) {
-            const signupData = JSON.parse(verifiedSignup);
-            if (
-              signupData.email === email &&
-              signupData.password === password
-            ) {
-              resolve({
-                success: true,
-                needsOTP: true,
-                user: {
-                  id: signupData.id,
-                  email: email,
-                  name: signupData.name,
-                  phone: signupData.phone,
-                  verifiedAt: signupData.verifiedAt,
-                },
-              });
-            } else {
-              resolve({ success: false, error: "Invalid credentials" });
-            }
-          } else {
-            resolve({
-              success: false,
-              error: "User not found. Please signup first.",
-            });
-          }
-        }, 1000);
-      });
+      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password });
 
-      return response;
+      if (response.data.success) {
+          return { 
+              success: true, 
+              needsOTP: response.data.needsOTP, 
+              message: response.data.message 
+          };
+      } else {
+          return { success: false, error: response.data.error };
+      }
     } catch (error) {
-      return { success: false, error: error.message };
+       console.error("Login error:", error);
+       return { success: false, error: error.response?.data?.error || error.message };
     }
   };
 
-  const completeLogin = async (email, password) => {
-    try {
-      // After OTP verification, complete the login
-      const response = await new Promise((resolve) => {
-        setTimeout(() => {
-          const verifiedSignup = localStorage.getItem("verifiedSignup");
-          if (verifiedSignup) {
-            const signupData = JSON.parse(verifiedSignup);
-            if (
-              signupData.email === email &&
-              signupData.password === password
-            ) {
-              resolve({
-                success: true,
-                user: {
-                  id: signupData.id,
-                  email: email,
-                  name: signupData.name,
-                  phone: signupData.phone,
-                  verifiedAt: signupData.verifiedAt,
-                },
-                token: "auth_token_" + Date.now(),
-              });
-            } else {
-              resolve({ success: false, error: "Invalid credentials" });
-            }
-          } else {
-            resolve({
-              success: false,
-              error: "User not found. Please signup first.",
-            });
-          }
-        }, 1000);
-      });
+  const completeLogin = async (email, passwordOrOtp) => {
+    // Note: The original signature was (email, password), but in the OTP flow for login
+    // we typically send (email, otp). Looking at Login.jsx:
+    // It uses LoginOTPVerification -> onComplete -> completeLogin(email, otp)
+    // So the second argument is actually the OTP.
+    const otp = passwordOrOtp;
 
-      if (response.success) {
-        localStorage.setItem("user", JSON.stringify(response.user));
-        localStorage.setItem("authToken", response.token);
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/verify-login", { email, otp });
+
+      if (response.data.success) {
+        const { user, token } = response.data;
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("authToken", token);
         localStorage.setItem("loginTime", new Date().toISOString());
-        setUser(response.user);
+        
+        setUser(user);
         setIsAuthenticated(true);
-        return { success: true, user: response.user };
+        return { success: true, user: user };
       } else {
-        return { success: false, error: response.error };
+        return { success: false, error: response.data.error };
       }
     } catch (error) {
-      return { success: false, error: error.message };
+      console.error("Complete login error:", error);
+      return { success: false, error: error.response?.data?.error || error.message };
     }
   };
 
