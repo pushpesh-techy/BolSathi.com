@@ -1,11 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #473472;
-  --secondary: #53629E;
-  --accent: #87BAC3;
-  --light: #D6F4ED;
-  --background: #F8F9FA;
-  --text-primary: #473472;
-  --text-secondary: #53629E;
+  /* Modern Vibrant Palette */
+  --primary: #6c5dd3; /* Vibrant Purple/Blue */
+  --secondary: #a098e5; /* Soft Light Purple */
+  --accent: #ff754c; /* Energetic Coral/Orange */
+  --success: #45b36b; /* Fresh Green */
+  --warning: #ffac32; /* Warm Yellow */
+  --danger: #ff5b5b; /* Soft Red */
+
+  /* Backgrounds */
+  --background: #f0f3f9; /* Clean Light Gray/Blueish */
+  --surface: #ffffff; /* Pure White Surface */
+
+  /* Typography */
+  --text-primary: #1a1d1f; /* Almost Black */
+  --text-secondary: #6f767e; /* Neutral Gray */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }

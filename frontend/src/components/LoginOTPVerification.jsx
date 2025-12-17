@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-const LoginOTPVerification = ({ email, onBack, credentials }) => {
+const LoginOTPVerification = ({ email, onBack, credentials, deviceId }) => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -10,44 +10,25 @@ const LoginOTPVerification = ({ email, onBack, credentials }) => {
   const navigate = useNavigate();
   const { completeLogin } = useContext(AuthContext);
 
-  // Timer for OTP expiration
-  useEffect(() => {
-    if (timeLeft === 0) {
-      setError("OTP expired. Please try logging in again.");
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
+  // Helper to format time as MM:SS
   const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [timeLeft]);
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!otp.trim()) {
-      setError("Please enter OTP");
-      return;
-    }
-
-    if (otp.length !== 6) {
-      setError("OTP must be 6 digits");
-      return;
-    }
-
-    if (timeLeft === 0) {
-      setError("OTP has expired");
-      return;
-    }
+    // ... (validations)
 
     setLoading(true);
     try {
@@ -58,7 +39,8 @@ const LoginOTPVerification = ({ email, onBack, credentials }) => {
       if (/^\d{6}$/.test(otp)) {
         const result = await completeLogin(
           credentials.email,
-          otp
+          otp,
+          deviceId
         );
         if (result.success) {
           navigate("/");

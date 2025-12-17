@@ -48,11 +48,23 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const result = await login(formData.email, formData.password);
-      if (result.success && result.needsOTP) {
-        setShowOTP(true);
-      } else if (result.success) {
-        navigate("/");
+      // Get or Generate Device ID
+      let deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+          // Robust fallback for device ID generation
+          deviceId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          localStorage.setItem("deviceId", deviceId);
+      }
+
+      const result = await login(formData.email, formData.password, deviceId);
+      
+      if (result.success) {
+         if (result.needsOTP) {
+             setShowOTP(true);
+         } else {
+             // Trusted Device found - Direct Login
+             navigate("/"); 
+         }
       } else {
         setError(result.error || "Login failed");
       }
@@ -68,6 +80,7 @@ const Login = () => {
       <LoginOTPVerification
         email={formData.email}
         credentials={formData}
+        deviceId={localStorage.getItem("deviceId")}
         onBack={() => {
           setShowOTP(false);
           setError("");
@@ -150,6 +163,12 @@ const Login = () => {
               onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
               onBlur={(e) => (e.target.style.borderColor = "var(--light)")}
             />
+          </div>
+
+          <div className="flex justify-end">
+            <a href="/forgot-password" className="text-sm font-semibold hover:underline" style={{ color: "var(--primary)" }}>
+              Forgot Password?
+            </a>
           </div>
 
           <button

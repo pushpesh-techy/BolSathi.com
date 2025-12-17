@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Home, Layers, Languages, Info, Phone, ChevronDown, User, Menu } from "lucide-react";
 
 const navItems = [
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useContext(AuthContext); 
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuRef = useRef();
 
@@ -31,7 +33,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-[#060818] py-4 px-8 flex items-center justify-between shadow-xl z-50">
+    <nav className="fixed top-0 left-0 w-full bg-[#060818]/90 backdrop-blur-md border-b border-white/5 py-4 px-8 flex items-center justify-between shadow-2xl z-50 transition-all duration-300">
       
       {/* Logo */}
       <div className="flex items-center gap-2">
@@ -80,13 +82,13 @@ export default function Navbar() {
       {/* Right Side Button / User */}
       {!isAuthenticated ? (
         <button
-          onClick={() => (window.location.href = "/login")}
+          onClick={() => navigate("/login")}
           className="hidden md:block bg-gradient-to-r from-blue-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold hover:scale-105 transition"
         >
           Get Started
         </button>
       ) : (
-        <div className="relative hidden md:block">
+        <div className="relative hidden md:block" ref={menuRef}>
           <div
             className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full cursor-pointer hover:bg-white/20 transition"
             onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -96,24 +98,31 @@ export default function Navbar() {
           </div>
 
           {userMenuOpen && (
-            <div className="absolute right-0 mt-3 bg-[#0a0f2a] w-44 rounded-md border border-white/10 shadow-lg py-2">
+            <div className="absolute right-0 mt-3 bg-[#0a0f2a] w-44 rounded-md border border-white/10 shadow-lg py-2 z-[60]">
               <p
                 className="px-4 py-2 text-gray-200 hover:bg-white/10 cursor-pointer"
-                onClick={() => (window.location.href = "/profile")}
+                onClick={() => {
+                    navigate("/profile");
+                    setUserMenuOpen(false);
+                }}
               >
                 Profile
               </p>
               <p
                 className="px-4 py-2 text-gray-200 hover:bg-white/10 cursor-pointer"
-                onClick={() => (window.location.href = "/settings")}
+                onClick={() => {
+                    navigate("/settings");
+                    setUserMenuOpen(false);
+                }}
               >
                 Settings
               </p>
               <p
-                className="px-4 py-2 bg-linear-to-r from-blue-400 to-purple-500 text-white cursor-pointer"
+                className="px-4 py-2 bg-gradient-to-r from-blue-400 to-purple-500 text-white cursor-pointer"
                 onClick={() => {
                    logout();
-                   window.location.href = "/login";
+                   navigate("/login");
+                   setUserMenuOpen(false);
                 }}
               >
                 Logout
@@ -168,9 +177,9 @@ export default function Navbar() {
           ))}
 
           {/* Mobile Get Started */}
-          {!isLoggedIn && (
+          {!isAuthenticated && (
             <button
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => navigate("/login")}
               className="mt-4 ml-6 bg-gradient-to-r from-blue-400 to-purple-500 text-white px-6 py-2 rounded-full font-semibold"
             >
               Get Started
@@ -178,15 +187,18 @@ export default function Navbar() {
           )}
 
           {/* Mobile User */}
-          {isLoggedIn && (
+          {isAuthenticated && (
             <div className="mt-4 ml-6">
-              <p className="text-gray-300 py-2 cursor-pointer" onClick={() => (window.location.href = "/profile")}>
+              <p className="text-gray-300 py-2 cursor-pointer" onClick={() => navigate("/profile")}>
                 Profile
               </p>
-              <p className="text-gray-300 py-2 cursor-pointer" onClick={() => (window.location.href = "/settings")}>
+              <p className="text-gray-300 py-2 cursor-pointer" onClick={() => navigate("/settings")}>
                 Settings
               </p>
-              <p className=" mt-4 bg-gradient-to-r from-blue-400 to-purple-500 text-white px-2 py-2 rounded-full font-semibold" onClick={() => (window.location.href = "/logout")}>
+              <p className=" mt-4 bg-gradient-to-r from-blue-400 to-purple-500 text-white px-2 py-2 rounded-full font-semibold" onClick={() => {
+                  logout();
+                  navigate("/login");
+              }}>
                 Logout
               </p>
             </div>

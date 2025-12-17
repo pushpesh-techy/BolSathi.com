@@ -66,11 +66,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = async (email, password, deviceId) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password, deviceId });
 
       if (response.data.success) {
+          // If needsOTP is false, user is logged in (Trusted Device)
+          if (response.data.needsOTP === false) {
+             const { user, token } = response.data;
+             localStorage.setItem("user", JSON.stringify(user));
+             localStorage.setItem("authToken", token);
+             localStorage.setItem("loginTime", new Date().toISOString());
+             
+             setUser(user);
+             setIsAuthenticated(true);
+          }
+
           return { 
               success: true, 
               needsOTP: response.data.needsOTP, 
@@ -85,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const completeLogin = async (email, passwordOrOtp) => {
+  const completeLogin = async (email, passwordOrOtp, deviceId) => {
     // Note: The original signature was (email, password), but in the OTP flow for login
     // we typically send (email, otp). Looking at Login.jsx:
     // It uses LoginOTPVerification -> onComplete -> completeLogin(email, otp)
@@ -93,7 +104,7 @@ export const AuthProvider = ({ children }) => {
     const otp = passwordOrOtp;
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/verify-login", { email, otp });
+      const response = await axios.post("http://localhost:5000/api/auth/verify-login", { email, otp, deviceId });
 
       if (response.data.success) {
         const { user, token } = response.data;

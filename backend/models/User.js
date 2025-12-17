@@ -24,7 +24,12 @@ const userSchema = mongoose.Schema({
     },
     verifiedAt: {
         type: Date
-    }
+    },
+    trustedDevices: [{
+        deviceId: { type: String, required: true },
+        ip: { type: String },
+        lastLogin: { type: Date, default: Date.now }
+    }]
 }, {
     timestamps: true
 });
